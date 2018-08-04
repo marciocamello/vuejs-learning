@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="//unpkg.com/vue"></script>
+    <script src="//unpkg.com/vuex"></script>
+</head>
+<body>
+<div id="app">
+    <h1>{{welcome}}</h1>
+    <h2>{{message}}</h2>
+    <h3>{{count}}</h3>
+    <button @click="pressed">Increment Counter</button>
+    <p></p>
+    <h3>{{info}}</h3>
+    <button @click="info++">Press Me</button>
+    <child></child>
+</div>
+<script>
+    const store = new Vuex.Store({
+        state: {
+            message: 'Hello From Vuex',
+            count: 0
+        },
+        mutations: { //sync
+            increment (state, payload) {
+                state.count+=payload;
+            }
+        },
+        actions: { //async
+            increment (state, payload) {
+                state.commit('increment', payload);
+            }
+        },
+        getters: {
+            message (state) {
+                return state.message.toUpperCase();
+            },
+            count (state) {
+                return state.count;
+            }
+        }
+    });
+
+    const Child = {
+        template: `<div>Hello From Child {{foo.info}}</div>`,
+        inject: ['foo']
+    };
+
+    new Vue({
+        el: '#app',
+        components: { Child },
+        provide () {
+            const foo = {};
+            Object.defineProperty(foo, 'info', {
+                enumerable: true,
+                get: () => this.info
+            });
+            return { foo };
+        },
+        data() {
+            return {
+                welcome: 'Hello Word',
+                info: 123
+            }
+        },
+        computed: {
+            message () {
+                return store.getters.message;
+            }
+            ,count () {
+                return store.getters.count
+            }
+        },
+        methods: {
+            pressed () {
+                //store.commit('increment', 10);
+                store.dispatch('increment', 10);
+            }
+        }
+    })
+</script>
+</body>
+</html>
